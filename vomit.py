@@ -12,8 +12,10 @@ access_token_secret = "D4hoDLLne3mQpZW2mtyRUHqqHA5mVH9KBpFGUyaExrMai"
 consumer_key = "gYT97rTu4PoaA0sUrePBy8D5N"
 consumer_secret = "MCN9yypNkQbAwIzbLp02XenwaG1Xgj8kp2hChvlbQbhOW42EWZ"
 from collections import defaultdict
-
+import time
 tweetmap = defaultdict(list)
+tweetcount = defaultdict(lambda: 0)
+debug = False
 
 def get_tweet_sentiment(tweet):
         '''
@@ -25,19 +27,38 @@ def get_tweet_sentiment(tweet):
 	return analysis.sentiment.polarity
 #This is a basic listener that just prints received tweets to stdout.
 class StdOutListener(StreamListener):
-
+    def __init__(self):
+	self.clock = time.time() 
+	self.ema = 0 
+	self.alpha = 0.01
+	self.first = True
     def on_data(self, data):
 	try: 
 		obj = json.loads(data)
-		print(obj['place']['full_name'])
-		print(obj['place'])
-		tweetmap[obj['place']['full_name']].append(obj['text'])
-		print(obj['text'])
-		print('sentiment:',get_tweet_sentiment(obj['text']))
-		print ""
-	 	xs = sorted(map(len,tweetmap.values()))
+		tweetcount[obj['place']['full_name']] = tweetcount[obj['place']['full_name']] + 1
+	 	xs = sorted(tweetcount.items(), key = lambda x: x[1] )
 		N=100
-		print(xs[-10:])
+		top = xs[-N:]
+		workingset = set(map(lambda x: x[0] ,top))
+		if obj['place']['full_name'] in workingset: 
+			if self.first==False:
+				diff  = time.time() - self.clock
+				self.clock = time.time() 
+				self.ema = self.ema*(1-self.alpha) + self.alpha*diff if self.ema> 0 else diff 
+			self.first=False
+			sentim = get_tweet_sentiment(obj['text'])
+			if debug:
+				print('diff time:',self.ema)
+				print(obj['place']['full_name'])
+				print(obj['place'])
+				print(obj['text'])
+				print('sentiment:', sentim)
+				print ""
+				print(top)
+			top_places = map(lambda x:x[0],top)
+			rank = dict(zip(top_places,range(len(top_places))))[obj['place']['full_name']]
+			print(rank,sentim)
+			
 		#print(obj)
 		#print "\n\n\n\n\n"
 	except:

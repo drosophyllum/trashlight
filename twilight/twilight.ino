@@ -48,7 +48,7 @@ void allColor(unsigned int c) {
 
 
 //reads up to maxlen into line, returns number of characters read or -1 if none
-int getline(char line*, int maxlength)
+int getline(char *line, int maxlength)
 {
   int i=-1;
   for (i=0; i<maxlength; ++i) {
@@ -61,7 +61,11 @@ int getline(char line*, int maxlength)
   return i;
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+#define MAXLENGTH 55
+char line[MAXLENGTH];
 
+void loop() {
+  int num = getline(&line[0], MAXLENGTH);
+  Serial.print("echo: ");
+  Serial.println(line);
 }

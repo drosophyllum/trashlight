@@ -18,7 +18,7 @@
 #include <OctoWS2811.h>
 
 // octo ws library assumes a NxN grid but we will only be using the first row!
-const int ledsPerStrip = 100;
+const int ledsPerStrip = 125;
 
 DMAMEM int displayMemory[ledsPerStrip*6];
 int drawingMemory[ledsPerStrip*6];
@@ -29,6 +29,7 @@ OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
 void setup() {
   Serial.begin(115200);
+  Serial.setTimeout(-1);
   leds.begin();
   allColor(0xFF0000);  // flash all LEDs red
   delay(800);
@@ -52,7 +53,9 @@ int getline(char *line, int maxlength)
 {
   int i=-1;
   for (i=0; i<maxlength; ++i) {
+    while (!Serial.available()) {};
     char c = Serial.read();
+    Serial.print(c);
     if (c=='\n'){
       break;
     }
@@ -61,11 +64,45 @@ int getline(char *line, int maxlength)
   return i;
 }
 
+void chomp(char c) {
+  while (!Serial.available()) {};
+  for (;;) {
+    char t = Serial.read();
+    if (t==c) {
+      break;
+    }
+  }
+}
+
+bool parse(int *index, float *sentiment) {
+  while (!Serial.available()) {};
+  chomp('(');
+  *index = Serial.parseInt();
+  chomp(',');
+  *sentiment = Serial.parseFloat();
+  chomp(')');
+}
+
 #define MAXLENGTH 55
 char line[MAXLENGTH];
 
 void loop() {
-  int num = getline(&line[0], MAXLENGTH);
-  Serial.print("echo: ");
-  Serial.println(line);
+  //Serial.println("type shit: ");
+  //int num = getline(&line[0], MAXLENGTH);
+  //Serial.print("echo: ");
+  //Serial.println(line);
+  int index=0;
+  float sentiment=0.0f;
+  parse(&index, &sentiment);
+  Serial.print(index);
+  Serial.print(" ");
+  Serial.println(sentiment);
+  int color = 0;
+  if (sentiment>=0) {
+  color = 0x00FF00;  // then green
+  } else {
+  color = 0xFF0000;  // then green
+  }
+  leds.setPixel(index, color);
+  leds.show();
 }

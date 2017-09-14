@@ -18,7 +18,7 @@
 #include <OctoWS2811.h>
 
 // octo ws library assumes a NxN grid but we will only be using the first row!
-const int ledsPerStrip = 150;
+const int ledsPerStrip = 10;
 
 DMAMEM int displayMemory[ledsPerStrip*10];
 int drawingMemory[ledsPerStrip*10];
@@ -105,16 +105,18 @@ void chomp(char c) {
 bool parse(struct ledcolor *desc, int len) {
   while (!Serial.available()) {};
   chomp('(');
-  for (int i=0; i<(len-1); ++i) {
+  for (int i=0; i<(len); ++i) {
     //desc[i].index = Serial.parseInt();
     //if (debug) {
     //  Serial.print(desc[i].index);
     //}
     //chomp(',');
-    desc[i].color = Serial.parseInt();
+    int color = Serial.parseInt();
     if (debug) {
-      Serial.print(desc[i].color);
+      Serial.print(color);
     }
+    leds.setPixel(i, color);
+    leds.show();
     chomp(',');
   }
   chomp(')');
@@ -125,8 +127,8 @@ void loop() {
   //int color=0.0f;
   //parse(&index, &color);
   parse(&ldesc[0], ledsPerStrip);
-  for (int i=0; i<ledsPerStrip; ++i) {
-    leds.setPixel(i, ldesc[i].color);
-    leds.show();
-  }
+//  for (int i=0; i<ledsPerStrip; ++i) {
+ //   leds.setPixel(i, ldesc[i].color);
+  //  leds.show();
+ // }
 }

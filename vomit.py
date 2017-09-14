@@ -7,7 +7,7 @@ from tweepy import Stream
 import json 
 from textblob import TextBlob
 import re
-#import numpy as np
+import numpy as np
 #Variables that contains the user credentials to access Twitter API 
 access_token = "297199576-CMR5eHYtRbz71KoJBTyNPbPCcz8CbxRMmrDGKaBi"
 access_token_secret = "D4hoDLLne3mQpZW2mtyRUHqqHA5mVH9KBpFGUyaExrMai"
@@ -60,8 +60,8 @@ class StdOutListener(StreamListener):
 			top_places = map(lambda x:x[0],top)
 			rank = dict(zip(top_places,range(len(top_places))))[obj['place']['full_name']]
 			a = np.array([128,0,0])
-			a = np.array([0,0,128])
-			sentim_01 = (sentim +0.5)/2
+			b = np.array([0,0,128])
+			sentim_01 = (sentim/2 +0.5)
 			color =(1-sentim_01)*a + sentim_01*b
 			print(rank,color[0],color[1],color[2])
 			

@@ -27,18 +27,20 @@ def get_tweet_sentiment(tweet):
     analysis = TextBlob(tweet)#' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split()))
     return analysis.sentiment.polarity
 #This is a basic listener that just prints received tweets to stdout.
+N=150
 class StdOutListener(StreamListener):
     def __init__(self):
         self.clock = time.time() 
         self.ema = 0 
         self.alpha = 0.01
         self.first = True
+        self.lights = np.zeros(N)
     def on_data(self, data):
+        self.lights = self.lights*(1-self.alpha)
         try: 
             obj = json.loads(data)
             tweetcount[obj['place']['full_name']] = tweetcount[obj['place']['full_name']] + 1
             xs = sorted(tweetcount.items(), key = lambda x: x[1] )
-            N=150
             top = xs[-N:]
             workingset = set(map(lambda x: x[0] ,top))
             if obj['place']['full_name'] in workingset: 
@@ -64,13 +66,14 @@ class StdOutListener(StreamListener):
                 sentim_01 = (sentim/2 +0.3)
                 color =(1-sentim_01)*a + sentim_01*b
                 color = int(int(color[0])<<16) | int(int(color[1])<<8) | int(int(color[2]))
-                print(rank, color)
+                self.lights[rank] = color
+                print(','.join(map(lambda x: str(int(x)),self.lights)))
                 #print(rank,int(color[0]),int(color[1]),int(color[2]))
             #print(obj)
             #print "\n\n\n\n\n"
         except:
             pass
-            return True
+        return True
 
     def on_error(self, status):
         print status

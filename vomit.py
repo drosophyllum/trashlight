@@ -59,7 +59,11 @@ class StdOutListener(StreamListener):
 				print(top)
 			top_places = map(lambda x:x[0],top)
 			rank = dict(zip(top_places,range(len(top_places))))[obj['place']['full_name']]
-			print(rank,sentim)
+			a = np.array([128,0,0])
+			a = np.array([0,0,128])
+			sentim_01 = (sentim +0.5)/2
+			color =(1-sentim_01)*a + sentim_01*b
+			print(rank,color[0],color[1],color[2])
 			
 		#print(obj)
 		#print "\n\n\n\n\n"

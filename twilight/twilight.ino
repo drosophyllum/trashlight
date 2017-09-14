@@ -18,14 +18,16 @@
 #include <OctoWS2811.h>
 
 // octo ws library assumes a NxN grid but we will only be using the first row!
-const int ledsPerStrip = 125;
+const int ledsPerStrip = 150;
 
-DMAMEM int displayMemory[ledsPerStrip*6];
-int drawingMemory[ledsPerStrip*6];
+DMAMEM int displayMemory[ledsPerStrip*10];
+int drawingMemory[ledsPerStrip*10];
 
 const int config = WS2811_GRB | WS2811_800kHz;
 
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
+
+static const bool debug = true;
 
 void setup() {
   Serial.begin(115200);
@@ -48,21 +50,22 @@ void allColor(unsigned int c) {
 }
 
 
-//reads up to maxlen into line, returns number of characters read or -1 if none
-int getline(char *line, int maxlength)
-{
-  int i=-1;
-  for (i=0; i<maxlength; ++i) {
-    while (!Serial.available()) {};
-    char c = Serial.read();
-    Serial.print(c);
-    if (c=='\n'){
-      break;
-    }
-    line[i]=c;
-  }
-  return i;
-}
+//we dont need this anymore
+////reads up to maxlen into line, returns number of characters read or -1 if none
+//int getline(char *line, int maxlength)
+//{
+//  int i=-1;
+//  for (i=0; i<maxlength; ++i) {
+//    while (!Serial.available()) {};
+//    char c = Serial.read();
+//    Serial.print(c);
+//    if (c=='\n'){
+//      break;
+//    }
+//    line[i]=c;
+//  }
+//  return i;
+//}
 
 void chomp(char c) {
   while (!Serial.available()) {};
@@ -72,37 +75,30 @@ void chomp(char c) {
       break;
     }
   }
+  if (debug) {
+    Serial.print(c);
+  }
 }
 
-bool parse(int *index, float *sentiment) {
+bool parse(int *index, int *color) {
   while (!Serial.available()) {};
   chomp('(');
   *index = Serial.parseInt();
+  if (debug) {
+    Serial.print(*index);
+  }
   chomp(',');
-  *sentiment = Serial.parseFloat();
+  *color = Serial.parseInt();
+  if (debug) {
+    Serial.print(*color);
+  }
   chomp(')');
 }
 
-#define MAXLENGTH 55
-char line[MAXLENGTH];
-
 void loop() {
-  //Serial.println("type shit: ");
-  //int num = getline(&line[0], MAXLENGTH);
-  //Serial.print("echo: ");
-  //Serial.println(line);
   int index=0;
-  float sentiment=0.0f;
-  parse(&index, &sentiment);
-  Serial.print(index);
-  Serial.print(" ");
-  Serial.println(sentiment);
-  int color = 0;
-  if (sentiment>=0) {
-  color = 0x00FF00;  // then green
-  } else {
-  color = 0xFF0000;  // then green
-  }
+  int color=0.0f;
+  parse(&index, &color);
   leds.setPixel(index, color);
   leds.show();
 }

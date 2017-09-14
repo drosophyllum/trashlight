@@ -29,6 +29,13 @@ OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
 static const bool debug = false;
 
+struct ledcolor {
+int index;
+int color;
+};
+
+struct ledcolor ldesc[ledsPerStrip];
+
 void setup() {
   Serial.begin(115200);
   Serial.setTimeout(-1);
@@ -80,25 +87,46 @@ void chomp(char c) {
   }
 }
 
-bool parse(int *index, int *color) {
+//bool parse(int *index, int *color) {
+//  while (!Serial.available()) {};
+//  chomp('(');
+//  *index = Serial.parseInt();
+//  if (debug) {
+//    Serial.print(*index);
+//  }
+//  chomp(',');
+//  *color = Serial.parseInt();
+//  if (debug) {
+//    Serial.print(*color);
+//  }
+//  chomp(')');
+//}
+
+bool parse(struct ledcolor *desc, int len) {
   while (!Serial.available()) {};
   chomp('(');
-  *index = Serial.parseInt();
-  if (debug) {
-    Serial.print(*index);
-  }
-  chomp(',');
-  *color = Serial.parseInt();
-  if (debug) {
-    Serial.print(*color);
+  for (int i=0; i<(len-1); ++i) {
+    //desc[i].index = Serial.parseInt();
+    //if (debug) {
+    //  Serial.print(desc[i].index);
+    //}
+    //chomp(',');
+    desc[i].color = Serial.parseInt();
+    if (debug) {
+      Serial.print(desc[i].color);
+    }
+    chomp(',');
   }
   chomp(')');
 }
 
 void loop() {
-  int index=0;
-  int color=0.0f;
-  parse(&index, &color);
-  leds.setPixel(index, color);
-  leds.show();
+  //int index=0;
+  //int color=0.0f;
+  //parse(&index, &color);
+  parse(&ldesc[0], ledsPerStrip);
+  for (int i=0; i<ledsPerStrip; ++i) {
+    leds.setPixel(i, ldesc[i].color);
+    leds.show();
+  }
 }

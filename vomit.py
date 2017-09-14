@@ -39,7 +39,7 @@ class StdOutListener(StreamListener):
 		obj = json.loads(data)
 		tweetcount[obj['place']['full_name']] = tweetcount[obj['place']['full_name']] + 1
 	 	xs = sorted(tweetcount.items(), key = lambda x: x[1] )
-		N=100
+		N=150
 		top = xs[-N:]
 		workingset = set(map(lambda x: x[0] ,top))
 		if obj['place']['full_name'] in workingset: 

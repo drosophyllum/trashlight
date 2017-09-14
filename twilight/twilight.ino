@@ -27,7 +27,7 @@ const int config = WS2811_GRB | WS2811_800kHz;
 
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
-static const bool debug = true;
+static const bool debug = false;
 
 void setup() {
   Serial.begin(115200);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from lights import makecolor,printlights
 #Import the necessary methods from tweepy library
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
@@ -28,18 +28,21 @@ def get_tweet_sentiment(tweet):
 	analysis = TextBlob(tweet)#' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet).split()))
 	return analysis.sentiment.polarity
 #This is a basic listener that just prints received tweets to stdout.
+N=150
 class StdOutListener(StreamListener):
     def __init__(self):
 	self.clock = time.time() 
 	self.ema = 0 
 	self.alpha = 0.01
 	self.first = True
+        self.lights = np.zeros((N,3))
+
     def on_data(self, data):
+        self.lights = self.lights*self.alpha
 	try: 
 		obj = json.loads(data)
 		tweetcount[obj['place']['full_name']] = tweetcount[obj['place']['full_name']] + 1
 	 	xs = sorted(tweetcount.items(), key = lambda x: x[1] )
-		N=100
 		top = xs[-N:]
 		workingset = set(map(lambda x: x[0] ,top))
 		if obj['place']['full_name'] in workingset: 
@@ -59,11 +62,12 @@ class StdOutListener(StreamListener):
 				print(top)
 			top_places = map(lambda x:x[0],top)
 			rank = dict(zip(top_places,range(len(top_places))))[obj['place']['full_name']]
-			a = np.array([128,0,0])
-			b = np.array([0,0,128])
+			a = np.array([1,0,0])
+			b = np.array([0,0,1])
 			sentim_01 = (sentim/2 +0.5)
-			color =(1-sentim_01)*a + sentim_01*b
-			print(rank,color[0],color[1],color[2])
+			self.lights[rank,:] =(1-sentim_01)*a + sentim_01*b
+			#print(rank,color[0],color[1],color [2])
+			printlights([ makecolor(list(self.lights[i,:])) for i in range(self.lights.shape[0])])
 	except:
 		pass
         return True

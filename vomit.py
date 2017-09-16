@@ -4,15 +4,18 @@ from lights import makecolor,printlights
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-import json 
+import json
 from textblob import TextBlob
 import re
 import numpy as np
-#Variables that contains the user credentials to access Twitter API 
-access_token = "297199576-CMR5eHYtRbz71KoJBTyNPbPCcz8CbxRMmrDGKaBi"
-access_token_secret = "D4hoDLLne3mQpZW2mtyRUHqqHA5mVH9KBpFGUyaExrMai"
-consumer_key = "gYT97rTu4PoaA0sUrePBy8D5N"
-consumer_secret = "MCN9yypNkQbAwIzbLp02XenwaG1Xgj8kp2hChvlbQbhOW42EWZ"
+#Variables that contains the user credentials to access Twitter API
+from secrets import (
+    consumer_key,
+    consumer_secret,
+    access_token,
+    access_token_secret,
+
+)
 from collections import defaultdict
 import time
 tweetmap = defaultdict(list)
@@ -31,25 +34,25 @@ def get_tweet_sentiment(tweet):
 N=150
 class StdOutListener(StreamListener):
     def __init__(self):
-	self.clock = time.time() 
-	self.ema = 0 
+	self.clock = time.time()
+	self.ema = 0
 	self.alpha = 0.01
 	self.first = True
         self.lights = np.zeros((N,3))
 
     def on_data(self, data):
         self.lights = self.lights*self.alpha
-	try: 
+	try:
 		obj = json.loads(data)
 		tweetcount[obj['place']['full_name']] = tweetcount[obj['place']['full_name']] + 1
 	 	xs = sorted(tweetcount.items(), key = lambda x: x[1] )
 		top = xs[-N:]
 		workingset = set(map(lambda x: x[0] ,top))
-		if obj['place']['full_name'] in workingset: 
+		if obj['place']['full_name'] in workingset:
 			if self.first==False:
 				diff  = time.time() - self.clock
-				self.clock = time.time() 
-				self.ema = self.ema*(1-self.alpha) + self.alpha*diff if self.ema> 0 else diff 
+				self.clock = time.time()
+				self.ema = self.ema*(1-self.alpha) + self.alpha*diff if self.ema> 0 else diff
 			self.first=False
 			sentim = get_tweet_sentiment(obj['text'])
 			if debug:
@@ -104,8 +107,8 @@ if __name__ == '__main__':
     #for x1_,x2_ in Xs_:
 	#for y1,y2 in Ys_:
 #		grid.extend([x1,y1,x2,y2])
-#    print(grid)		 
-    stream1.filter(locations= [x1,y1,x2,y2]) #grid) 
+#    print(grid)
+    stream1.filter(locations= [x1,y1,x2,y2]) #grid)
 	#[-123.0137, 37.6040, -122.3549, 37.8324 , -77.0909, 5.4208, -73.8778, 8.8487])
     #stream1.filter(locations=[	-123.0137, 37.6040, -122.3549, 37.8324 , -77.0909, 5.4208, -73.8778, 8.8487])
     #stream.filter(locations=[-77.0909, 5.4208, -73.8778, 8.8487])

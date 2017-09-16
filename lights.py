@@ -39,4 +39,5 @@ def stringy(speed):
         i=0
         clist = rotate(clist, 1)
 
-stringy(10)
+if __name__ == '__main__':
+    stringy(10)
